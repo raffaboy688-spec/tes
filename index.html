@@ -1,0 +1,907 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RuangMading Multi-Sekolah</title>
+
+<style>
+:root {
+  --bg:#f4f6fb;
+  --card:#ffffff;
+  --text:#19233a;
+  --muted:#748099;
+  --line:#e3e8f2;
+  --primary:#5146e5;
+  --soft:#eeefff;
+}
+* { box-sizing:border-box; }
+body {
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:Arial,sans-serif;
+}
+body.dark {
+  --bg:#101522;
+  --card:#1b2232;
+  --text:#eef2ff;
+  --muted:#a7b0c4;
+  --line:#30384b;
+  --soft:#29294b;
+}
+button,input,textarea,select { font:inherit; }
+button {
+  cursor:pointer;
+  border:0;
+  border-radius:10px;
+  padding:11px 15px;
+  font-weight:bold;
+}
+.primary { background:var(--primary);color:white; }
+.secondary { background:var(--soft);color:var(--primary); }
+.danger { background:#ffecec;color:#c22; }
+.hidden { display:none!important; }
+header {
+  background:var(--card);
+  border-bottom:1px solid var(--line);
+  padding:16px 5%;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  position:sticky;
+  top:0;
+  z-index:5;
+}
+.brand { font-size:21px;font-weight:900; }
+.brand span { color:var(--primary); }
+main { max-width:1050px;margin:auto;padding:25px 16px; }
+.hero {
+  background:linear-gradient(120deg,#171c3d,#5146e5,#8656d9);
+  color:white;
+  padding:40px;
+  border-radius:22px;
+}
+.hero h1 { font-size:clamp(30px,5vw,48px);margin:12px 0; }
+.hero p { line-height:1.7;color:#e1e6ff; }
+.row { display:flex;gap:10px;flex-wrap:wrap;align-items:center; }
+.cards,.rooms,.posts {
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:14px;
+  margin:22px 0;
+}
+.card,.room-card,.post {
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:15px;
+  padding:18px;
+  overflow-wrap:anywhere;
+}
+.card h3,.room-card h3 { margin-bottom:7px; }
+.card p,.room-card p,.help {
+  color:var(--muted);
+  font-size:13px;
+  line-height:1.6;
+}
+.code,.tag {
+  display:inline-block;
+  background:var(--soft);
+  color:var(--primary);
+  border-radius:7px;
+  padding:6px 9px;
+  font-size:11px;
+  font-weight:bold;
+}
+.section-head {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-top:30px;
+}
+.room-head {
+  padding:24px;
+  background:#292b70;
+  color:white;
+  border-radius:17px;
+  overflow-wrap:anywhere;
+}
+.room-head p { color:#dce1ff; }
+.posts { grid-template-columns:repeat(2,minmax(0,1fr)); }
+.post h3 { margin:12px 0 7px; }
+.post p {
+  white-space:pre-wrap;
+  line-height:1.7;
+  color:var(--muted);
+}
+.post small { color:var(--muted); }
+.field { margin-bottom:14px; }
+.field label {
+  display:block;
+  font-size:13px;
+  font-weight:bold;
+  margin-bottom:7px;
+  color:var(--muted);
+}
+.field input,.field textarea,.field select {
+  width:100%;
+  padding:12px;
+  border:1px solid var(--line);
+  border-radius:10px;
+  background:var(--card);
+  color:var(--text);
+}
+.field textarea { min-height:120px;resize:vertical; }
+.modal-bg {
+  position:fixed;
+  inset:0;
+  background:#0009;
+  z-index:20;
+  display:grid;
+  place-items:center;
+  padding:15px;
+}
+.modal {
+  background:var(--card);
+  color:var(--text);
+  padding:24px;
+  border-radius:18px;
+  width:min(550px,100%);
+  max-height:90vh;
+  overflow:auto;
+}
+.modal-head {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:20px;
+}
+.modal-head h2 { margin:0; }
+.close { background:var(--soft);color:var(--text); }
+.empty {
+  grid-column:1/-1;
+  text-align:center;
+  padding:30px;
+  border:1px dashed var(--line);
+  border-radius:14px;
+  color:var(--muted);
+}
+footer {
+  text-align:center;
+  color:var(--muted);
+  font-size:12px;
+  padding:25px 10px;
+}
+.toast {
+  position:fixed;
+  bottom:20px;
+  left:50%;
+  transform:translateX(-50%);
+  background:#182138;
+  color:white;
+  padding:13px 18px;
+  border-radius:10px;
+  z-index:50;
+}
+@media(max-width:700px) {
+  .cards,.rooms { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .hero { padding:25px; }
+}
+@media(max-width:500px) {
+  header { padding:13px; }
+  .brand { font-size:17px; }
+  .cards,.rooms,.posts { grid-template-columns:1fr; }
+  .hero { padding:23px; }
+}
+</style>
+</head>
+
+<body>
+<header>
+  <div class="brand">✦ Ruang<span>Mading</span></div>
+  <div class="row">
+    <button class="secondary" id="themeBtn">◐ Tema</button>
+    <button class="secondary" id="homeBtn">Beranda</button>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <small>PLATFORM MADING DIGITAL SEKOLAH</small>
+    <h1>Satu sekolah, satu ruang mading.</h1>
+    <p>
+      Buat room mading sekolah dengan kode dan password sendiri.
+      Siswa membaca informasi, sedangkan admin mengelola artikel
+      dan agenda kegiatan.
+    </p>
+    <div class="row">
+      <button class="primary" id="createBtn">＋ Buat Room</button>
+      <button class="secondary" id="joinBtn">🔐 Masuk Room</button>
+    </div>
+  </section>
+
+  <section class="cards">
+    <div class="card">
+      <h3>🏫 Room Terpisah</h3>
+      <p>Artikel dan agenda setiap sekolah disimpan terpisah.</p>
+    </div>
+    <div class="card">
+      <h3>🔑 Password Room</h3>
+      <p>Masukkan kode dan password untuk membuka room.</p>
+    </div>
+    <div class="card">
+      <h3>🧑‍🏫 Hak Akses</h3>
+      <p>Siswa membaca, admin mengelola informasi.</p>
+    </div>
+  </section>
+
+  <section id="directory">
+    <div class="section-head">
+      <h2>Daftar Room</h2>
+      <span id="roomCount" class="help"></span>
+    </div>
+    <div class="rooms" id="roomList"></div>
+    <p class="help">
+      Prototipe ini menyimpan data di browser yang digunakan.
+    </p>
+  </section>
+
+  <section id="workspace" class="hidden"></section>
+
+  <footer>
+    RUANGMADING MULTI-SEKOLAH<br>
+    Prototipe HTML, CSS, JavaScript
+  </footer>
+</main>
+
+<div id="modalRoot"></div>
+<div id="toastRoot"></div>
+
+<script>
+const $ = s => document.querySelector(s);
+const KEY = "ruangmading_v1";
+
+function loadData() {
+  try {
+    return JSON.parse(localStorage.getItem(KEY)) ||
+      {rooms:[],current:null,member:null};
+  } catch {
+    return {rooms:[],current:null,member:null};
+  }
+}
+
+let data = loadData();
+
+function save() {
+  localStorage.setItem(KEY,JSON.stringify(data));
+}
+
+function esc(value="") {
+  return String(value).replace(/[&<>"']/g,c=>({
+    "&":"&amp;",
+    "<":"&lt;",
+    ">":"&gt;",
+    '"':"&quot;",
+    "'":"&#39;"
+  }[c]));
+}
+
+function notify(message) {
+  $("#toastRoot").innerHTML =
+    `<div class="toast">${esc(message)}</div>`;
+  setTimeout(()=>$("#toastRoot").innerHTML="",2500);
+}
+
+function currentRoom() {
+  return data.rooms.find(r=>r.id===data.current);
+}
+
+function makeCode(name) {
+  const base=name.normalize("NFD")
+    .replace(/[\u0300-\u036f]/g,"")
+    .toUpperCase().replace(/[^A-Z0-9]/g,"")
+    .slice(0,5) || "ROOM";
+
+  let code=base;
+  while(data.rooms.some(r=>r.code===code)) {
+    code=base.slice(0,4)+Math.floor(10+Math.random()*90);
+  }
+  return code;
+}
+
+function showModal(content) {
+  $("#modalRoot").innerHTML=`
+    <div class="modal-bg" id="modalBg">
+      <div class="modal">${content}</div>
+    </div>`;
+
+  $("#modalBg").onclick=e=>{
+    if(e.target.id==="modalBg") closeModal();
+  };
+}
+
+function closeModal() {
+  $("#modalRoot").innerHTML="";
+}
+
+function createRoomForm() {
+  showModal(`
+    <div class="modal-head">
+      <h2>Buat Room Sekolah</h2>
+      <button class="close" onclick="closeModal()">✕</button>
+    </div>
+
+    <form id="createForm">
+      <div class="field">
+        <label>Nama sekolah</label>
+        <input name="school" required maxlength="100"
+          placeholder="SMK Negeri 1 Turen">
+      </div>
+
+      <div class="field">
+        <label>Nama admin / guru</label>
+        <input name="admin" required maxlength="60">
+      </div>
+
+      <div class="field">
+        <label>Password room</label>
+        <input name="password" type="password"
+          required minlength="4">
+      </div>
+
+      <div class="field">
+        <label>Konfirmasi password</label>
+        <input name="confirm" type="password"
+          required minlength="4">
+      </div>
+
+      <p class="help">
+        Catatan: password demo disimpan di browser,
+        bukan dengan sistem keamanan server.
+      </p>
+
+      <button class="primary" style="width:100%">
+        Buat Room
+      </button>
+    </form>
+  `);
+
+  $("#createForm").onsubmit=e=>{
+    e.preventDefault();
+
+    const f=new FormData(e.target);
+    const school=f.get("school").trim();
+    const password=f.get("password");
+
+    if(password!==f.get("confirm")) {
+      return notify("Konfirmasi password tidak cocok.");
+    }
+
+    if(data.rooms.some(r=>
+      r.school.toLowerCase()===school.toLowerCase()
+    )) {
+      return notify("Nama sekolah sudah digunakan.");
+    }
+
+    const admin=f.get("admin").trim();
+
+    const r={
+      id:crypto.randomUUID(),
+      school,
+      admin,
+      code:makeCode(school),
+      password,
+      posts:[{
+        id:Date.now(),
+        title:"Selamat Datang di RuangMading!",
+        category:"Pengumuman",
+        date:new Date().toISOString().slice(0,10),
+        author:admin,
+        body:"Room berhasil dibuat. Admin dapat mulai menerbitkan informasi.",
+        pinned:true
+      }],
+      events:[]
+    };
+
+    data.rooms.push(r);
+    data.current=r.id;
+    data.member={role:"admin",name:admin};
+    save();
+    closeModal();
+    render();
+    notify("Room dibuat. Kode: "+r.code);
+  };
+}
+
+function loginForm() {
+  showModal(`
+    <div class="modal-head">
+      <h2>Masuk ke Room</h2>
+      <button class="close" onclick="closeModal()">✕</button>
+    </div>
+
+    <form id="loginForm">
+      <div class="field">
+        <label>Kode room</label>
+        <input name="code" required placeholder="Kode sekolah">
+      </div>
+
+      <div class="field">
+        <label>Password room</label>
+        <input name="password" type="password" required>
+      </div>
+
+      <div class="field">
+        <label>Login sebagai</label>
+        <select name="role">
+          <option value="student">Siswa / Pembaca</option>
+          <option value="admin">Admin / Guru (demo)</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Nama tampilan</label>
+        <input name="name" required maxlength="60">
+      </div>
+
+      <button class="primary" style="width:100%">
+        Masuk ke Room
+      </button>
+    </form>
+
+    <p class="help">
+      Pilihan admin hanya simulasi untuk demo.
+      Sistem nyata memerlukan akun admin yang diverifikasi server.
+    </p>
+  `);
+
+  $("#loginForm").onsubmit=e=>{
+    e.preventDefault();
+    const f=new FormData(e.target);
+
+    const r=data.rooms.find(x=>
+      x.code.toLowerCase()===f.get("code").trim().toLowerCase()
+    );
+
+    if(!r || r.password!==f.get("password")) {
+      return notify("Kode room atau password salah.");
+    }
+
+    data.current=r.id;
+    data.member={
+      role:f.get("role"),
+      name:f.get("name").trim()
+    };
+
+    save();
+    closeModal();
+    render();
+  };
+}
+
+function enterRoom(id) {
+  const r=data.rooms.find(x=>x.id===id);
+
+  showModal(`
+    <div class="modal-head">
+      <h2>${esc(r.school)}</h2>
+      <button class="close" onclick="closeModal()">✕</button>
+    </div>
+
+    <form id="enterForm">
+      <div class="field">
+        <label>Password room</label>
+        <input name="password" type="password" required>
+      </div>
+
+      <div class="field">
+        <label>Nama tampilan</label>
+        <input name="name" required maxlength="60">
+      </div>
+
+      <div class="field">
+        <label>Akses</label>
+        <select name="role">
+          <option value="student">Siswa / Pembaca</option>
+          <option value="admin">Admin / Guru (demo)</option>
+        </select>
+      </div>
+
+      <button class="primary" style="width:100%">Masuk</button>
+    </form>
+  `);
+
+  $("#enterForm").onsubmit=e=>{
+    e.preventDefault();
+    const f=new FormData(e.target);
+
+    if(f.get("password")!==r.password) {
+      return notify("Password salah.");
+    }
+
+    data.current=r.id;
+    data.member={
+      role:f.get("role"),
+      name:f.get("name").trim()
+    };
+
+    save();
+    closeModal();
+    render();
+  };
+}
+
+function renderRooms() {
+  $("#roomCount").textContent=data.rooms.length+" room";
+
+  $("#roomList").innerHTML=data.rooms.length
+    ? data.rooms.map(r=>`
+      <div class="room-card">
+        <span class="code">ROOM: ${esc(r.code)}</span>
+        <h3>🏫 ${esc(r.school)}</h3>
+        <p>${r.posts.length} artikel</p>
+        <div class="row" style="margin-top:12px">
+          <button class="primary"
+            onclick="enterRoom('${r.id}')">Masuk 🔐</button>
+          <button class="secondary"
+            onclick="copyCode('${r.code}')">Salin Kode</button>
+        </div>
+      </div>
+    `).join("")
+    : `<div class="empty">
+        <b>Belum ada room.</b><br>
+        Buat room pertama untuk memulai.
+      </div>`;
+}
+
+async function copyCode(code) {
+  try {
+    await navigator.clipboard.writeText(code);
+    notify("Kode room disalin: "+code);
+  } catch {
+    notify("Kode room: "+code);
+  }
+}
+
+function renderWorkspace() {
+  const r=currentRoom();
+  const w=$("#workspace");
+
+  if(!r || !data.member) {
+    w.classList.add("hidden");
+    w.innerHTML="";
+    return;
+  }
+
+  w.classList.remove("hidden");
+
+  const isAdmin=data.member.role==="admin";
+
+  const posts=r.posts
+    .filter(p=>p.status!=="draft")
+    .slice()
+    .sort((a,b)=>
+      Number(b.pinned)-Number(a.pinned) ||
+      b.date.localeCompare(a.date)
+    );
+
+  w.innerHTML=`
+    <div class="room-head">
+      <h2>${esc(r.school)}</h2>
+      <p>
+        Kode room: <b>${esc(r.code)}</b><br>
+        Pengguna: ${esc(data.member.name)} |
+        ${isAdmin?"Admin / Guru":"Siswa"}
+      </p>
+      <button class="secondary" onclick="leaveRoom()">
+        Keluar Room
+      </button>
+    </div>
+
+    <div class="row" style="margin:15px 0">
+      ${isAdmin?`
+        <button class="primary" onclick="postForm()">
+          ＋ Buat Informasi
+        </button>
+        <button class="secondary" onclick="eventForm()">
+          ＋ Tambah Agenda
+        </button>
+        <button class="secondary" onclick="exportCSV()">
+          ⇩ Ekspor CSV
+        </button>
+        <button class="danger" onclick="deleteRoom()">
+          Hapus Room
+        </button>
+      `:`<p class="help">Mode siswa: hanya melihat informasi.</p>`}
+    </div>
+
+    <div class="section-head">
+      <h2>Informasi Sekolah</h2>
+      <span class="tag">${posts.length} artikel</span>
+    </div>
+
+    <div class="posts">
+      ${posts.length?posts.map(p=>`
+        <article class="post">
+          <span class="tag">${esc(p.category)}</span>
+          ${p.pinned?"📌":""}
+          <h3>${esc(p.title)}</h3>
+          <small>${esc(p.author)} · ${esc(p.date)}</small>
+          <p>${esc(p.body)}</p>
+
+          ${isAdmin?`
+            <div class="row">
+              <button class="secondary"
+                onclick="editPost(${p.id})">Edit</button>
+              <button class="danger"
+                onclick="deletePost(${p.id})">Hapus</button>
+            </div>
+          `:""}
+        </article>
+      `).join(""):`<div class="empty">Belum ada artikel.</div>`}
+    </div>
+
+    <div class="section-head">
+      <h2>Agenda Kegiatan</h2>
+      <span class="tag">${r.events.length} agenda</span>
+    </div>
+
+    <div class="posts">
+      ${r.events.length?r.events.slice().sort((a,b)=>
+        a.date.localeCompare(b.date)
+      ).map(ev=>`
+        <article class="post">
+          <span class="tag">AGENDA</span>
+          <h3>${esc(ev.title)}</h3>
+          <p>
+            📅 ${esc(ev.date)} · ${esc(ev.time||"Waktu menyusul")}
+            <br>📍 ${esc(ev.place||"Lokasi menyusul")}
+          </p>
+          ${isAdmin?`
+            <button class="danger"
+              onclick="deleteEvent(${ev.id})">Hapus Agenda</button>
+          `:""}
+        </article>
+      `).join(""):`<div class="empty">Belum ada agenda.</div>`}
+    </div>
+  `;
+
+  $("#directory").classList.add("hidden");
+}
+
+function render() {
+  save();
+  renderRooms();
+  renderWorkspace();
+
+  if(!currentRoom()) {
+    $("#directory").classList.remove("hidden");
+  }
+}
+
+function postForm(existing=null) {
+  if(data.member?.role!=="admin") {
+    return notify("Hanya admin yang dapat menerbitkan informasi.");
+  }
+
+  const p=existing;
+
+  showModal(`
+    <div class="modal-head">
+      <h2>${p?"Edit Informasi":"Buat Informasi"}</h2>
+      <button class="close" onclick="closeModal()">✕</button>
+    </div>
+
+    <form id="postForm">
+      <div class="field">
+        <label>Judul</label>
+        <input name="title" required maxlength="120"
+          value="${esc(p?.title||"")}">
+      </div>
+
+      <div class="field">
+        <label>Kategori</label>
+        <select name="category">
+          ${["Pengumuman","Kegiatan","Karya Siswa",
+            "Literasi","Pendidikan","Lainnya"].map(c=>
+              `<option ${p?.category===c?"selected":""}>${c}</option>`
+          ).join("")}
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Tanggal</label>
+        <input name="date" type="date" required
+          value="${p?.date||new Date().toISOString().slice(0,10)}">
+      </div>
+
+      <div class="field">
+        <label>Isi informasi</label>
+        <textarea name="body" required maxlength="5000">${esc(p?.body||"")}</textarea>
+      </div>
+
+      <label>
+        <input type="checkbox" name="pinned" ${p?.pinned?"checked":""}>
+        Jadikan informasi prioritas
+      </label>
+
+      <br><br>
+      <button class="primary" style="width:100%">
+        Terbitkan Informasi
+      </button>
+    </form>
+  `);
+
+  $("#postForm").onsubmit=e=>{
+    e.preventDefault();
+    const f=new FormData(e.target);
+    const r=currentRoom();
+
+    const item={
+      id:p?p.id:Date.now(),
+      title:f.get("title").trim(),
+      category:f.get("category"),
+      date:f.get("date"),
+      body:f.get("body").trim(),
+      author:data.member.name,
+      pinned:f.has("pinned"),
+      status:"published"
+    };
+
+    if(p) {
+      r.posts=r.posts.map(x=>x.id===p.id?item:x);
+    } else {
+      r.posts.unshift(item);
+    }
+
+    save();
+    closeModal();
+    render();
+    notify("Informasi berhasil disimpan.");
+  };
+}
+
+function editPost(id) {
+  const p=currentRoom().posts.find(x=>x.id===id);
+  if(p) postForm(p);
+}
+
+function deletePost(id) {
+  if(!confirm("Hapus artikel ini?")) return;
+  const r=currentRoom();
+  r.posts=r.posts.filter(p=>p.id!==id);
+  save();
+  render();
+}
+
+function eventForm() {
+  if(data.member?.role!=="admin") return;
+
+  showModal(`
+    <div class="modal-head">
+      <h2>Tambah Agenda</h2>
+      <button class="close" onclick="closeModal()">✕</button>
+    </div>
+
+    <form id="eventForm">
+      <div class="field">
+        <label>Nama kegiatan</label>
+        <input name="title" required>
+      </div>
+
+      <div class="field">
+        <label>Tanggal</label>
+        <input name="date" type="date" required
+          value="${new Date().toISOString().slice(0,10)}">
+      </div>
+
+      <div class="field">
+        <label>Waktu</label>
+        <input name="time" type="time">
+      </div>
+
+      <div class="field">
+        <label>Tempat</label>
+        <input name="place">
+      </div>
+
+      <button class="primary" style="width:100%">
+        Simpan Agenda
+      </button>
+    </form>
+  `);
+
+  $("#eventForm").onsubmit=e=>{
+    e.preventDefault();
+    const f=new FormData(e.target);
+
+    currentRoom().events.push({
+      id:Date.now(),
+      title:f.get("title").trim(),
+      date:f.get("date"),
+      time:f.get("time"),
+      place:f.get("place")
+    });
+
+    save();
+    closeModal();
+    render();
+    notify("Agenda berhasil ditambahkan.");
+  };
+}
+
+function deleteEvent(id) {
+  if(!confirm("Hapus agenda ini?")) return;
+  const r=currentRoom();
+  r.events=r.events.filter(e=>e.id!==id);
+  save();
+  render();
+}
+
+function leaveRoom() {
+  data.current=null;
+  data.member=null;
+  save();
+  render();
+}
+
+function deleteRoom() {
+  const r=currentRoom();
+  if(!confirm("Hapus room beserta semua isinya?")) return;
+
+  data.rooms=data.rooms.filter(x=>x.id!==r.id);
+  data.current=null;
+  data.member=null;
+  save();
+  render();
+  notify("Room berhasil dihapus.");
+}
+
+function exportCSV() {
+  const r=currentRoom();
+  if(!r) return;
+
+  const rows=[
+    ["Judul","Kategori","Tanggal","Penulis","Isi"],
+    ...r.posts.map(p=>[
+      p.title,p.category,p.date,p.author,p.body
+    ])
+  ];
+
+  const csv=rows.map(row=>row.map(v=>
+    '"'+String(v??"").replace(/"/g,'""')+'"'
+  ).join(",")).join("\r\n");
+
+  const blob=new Blob(["\ufeff"+csv],{
+    type:"text/csv;charset=utf-8"
+  });
+
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url;
+  a.download="mading-"+r.code+".csv";
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+$("#createBtn").onclick=createRoomForm;
+$("#joinBtn").onclick=loginForm;
+$("#homeBtn").onclick=()=>{
+  data.current=null;
+  data.member=null;
+  save();
+  render();
+  window.scrollTo({top:0,behavior:"smooth"});
+};
+$("#themeBtn").onclick=()=>{
+  document.body.classList.toggle("dark");
+};
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape") closeModal();
+});
+
+render();
+</script>
+</body>
+</html>
